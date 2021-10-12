@@ -12,7 +12,7 @@ export const login = async (req, res) => {
       if (!existingUser) return res.status(404).json({ message: 'Incorrect Email or Password.' });
       const isCorrectPassword = await bcrypt.compare(password, existingUser.password);
       if (!isCorrectPassword) return res.status(400).json({ message: 'Incorrect Email or Password.' });
-      const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, 'test');
+      const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET);
       res.status(200).json({ existingUser , token });
    } catch (error) {
       res.status(500).json({ message: 'Something went wrong.' });
@@ -37,7 +37,7 @@ export const register = async (req, res) => {
          password: hashedPassword,
          profileImg: { url: 'https://res.cloudinary.com/travelog/image/upload/v1626965253/profile_img/profile_wnyc41.jpg' },
       });
-      const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, 'test');
+      const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET);
       res.status(200).json({ existingUser , token });
    } catch (error) {
       res.status(500).json({ message: 'Something went wrong.' });

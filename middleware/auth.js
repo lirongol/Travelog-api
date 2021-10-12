@@ -4,9 +4,9 @@ dotenv.config();
 
 const auth = async (req, res, next) => {
    try {
-      const token = req.headers.auth;
+      const token = req.headers.token;
       if (token) {
-         const decodedData = jwt.verify(token, 'test');
+         const decodedData = jwt.verify(token, process.env.JWT_SECRET);
          req.userId = decodedData?.id;
          next();
       } else {
