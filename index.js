@@ -9,14 +9,7 @@ import postRoutes from './routes/post.js';
 const app = express();
 dotenv.config();
 
-app.use(cors({
-   origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://192.168.1.200:3000',
-      'http://192.168.1.201:3000'
-   ]
-}));
+app.use(cors());
 app.use(express.json({ limit: '30mb', extended: true }));
 app.use(express.urlencoded({ limit: '30mb', extended: true }));
 
