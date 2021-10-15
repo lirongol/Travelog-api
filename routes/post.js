@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 
-import { getPosts, createPost, updatePost, deletePost, postUpVote, postDownVote } from '../controllers/posts.js';
+import { getPosts, createPost, updatePost, deletePost, postUpVote, postDownVote } from '../controllers/post.js';
 
 const router = express.Router();
 
