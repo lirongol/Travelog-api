@@ -2,16 +2,21 @@ import Post from '../models/post.js';
 import User from '../models/user.js';
 import { uploadPostMedia } from '../cloudinary/cloudinary.js';
 
-export const getPosts = async (req, res) => {
+
+// get requests
+
+export const getFeedPosts = async (req, res) => {
    try {
       const user = await User.findById(req.userId);
       if (!user) return res.status(401).json({ message: 'Unauthorized' });
-      const postMessages = await Post.find();
-      res.status(200).json(postMessages);
+      const posts = await Post.find({creatorId: { $in: user.following }}).sort({ createdAt: -1 });
+      res.status(200).json(posts);
    } catch (error) {
       res.status(404).json({ message: error.message });
    }
 }
+
+// post requests
 
 export const createPost = async (req, res) => {
    const post = req.body;
@@ -33,6 +38,8 @@ export const createPost = async (req, res) => {
    }
 }
 
+// patch requests
+
 export const updatePost = async (req, res) => {
    const { id } = req.params;
    const post = req.body;
@@ -48,19 +55,6 @@ export const updatePost = async (req, res) => {
          const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true });
          res.status(200).json(updatedPost);
       }
-   } catch (error) {
-      res.status(409).json({ message: error.message });
-   }
-}
-
-export const deletePost = async (req, res) => {
-   const { id } = req.params;
-   try {
-      const user = await User.findById(req.userId);
-      const post = await Post.findById(id);
-      if (!user || req.userId !== post.creatorId) return res.status(401).json({ message: 'Unauthorized' });
-      await Post.findByIdAndDelete(id);
-      res.status(202).json({ message: 'Post deleted successfully' });
    } catch (error) {
       res.status(409).json({ message: error.message });
    }
@@ -107,6 +101,21 @@ export const postDownVote = async (req, res) => {
       }
       const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true });
       res.status(200).json(updatedPost);
+   } catch (error) {
+      res.status(409).json({ message: error.message });
+   }
+}
+
+// delete requests
+
+export const deletePost = async (req, res) => {
+   const { id } = req.params;
+   try {
+      const user = await User.findById(req.userId);
+      const post = await Post.findById(id);
+      if (!user || req.userId !== post.creatorId) return res.status(401).json({ message: 'Unauthorized' });
+      await Post.findByIdAndDelete(id);
+      res.status(202).json({ message: 'Post deleted successfully' });
    } catch (error) {
       res.status(409).json({ message: error.message });
    }
