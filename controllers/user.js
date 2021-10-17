@@ -44,7 +44,7 @@ export const register = async (req, res) => {
    }
 }
 
-export const getUserInfo = async (req, res) => {
+export const getProfile = async (req, res) => {
    const { username } = req.params;
    try {
       const existingUser = await User.findById(req.userId);

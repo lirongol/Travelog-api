@@ -8,7 +8,9 @@ const postSchema = mongoose.Schema({
    postText: String,
    tags: [String],
    selectedFiles: [String],
+   selectedVideo: [String],
    media: [{ url: String, filename: String }],
+   video: [{ url: String, filename: String }],
    upVotes: { type: [String], default: [] },
    downVotes: { type: [String], default: [] }
 }, {timestamps: true})

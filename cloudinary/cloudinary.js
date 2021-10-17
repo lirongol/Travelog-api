@@ -11,11 +11,27 @@ cloudinary.config({
 export default cloudinary;
 
 export const uploadPostMedia = async (base64Array) => {
-   return await Promise.all(base64Array.map(async (file) => {
-      let uploadRes = await cloudinary.uploader.upload(
-         file,
-         { upload_preset: 'posts_media' }
+   try {
+      return await Promise.all(base64Array.map(async (file) => {
+         const uploadRes = await cloudinary.uploader.upload(
+            file,
+            { upload_preset: 'posts_media' }
+         );
+         return { url: uploadRes.url, filename: uploadRes.public_id };
+      }))
+   } catch (err) {
+      console.log(err);
+   }
+}
+
+export const uploadPostVideo = async (base64Video) => {
+   try {
+      const uploadRes = await cloudinary.uploader.upload(
+         base64Video,
+         { resource_type: "video", upload_preset: 'posts_video' }
       );
       return { url: uploadRes.url, filename: uploadRes.public_id };
-   }))
+   } catch (err) {
+      console.log(err);
+   }
 }
