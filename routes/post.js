@@ -16,10 +16,10 @@ router.get('/feedposts', auth, getFeedPosts);
 
 router.post('/', auth, createPost);
 
-router.patch('/:id', auth, updatePost);
-router.patch('/:id/postUpVote', auth, postUpVote);
-router.patch('/:id/postDownVote', auth, postDownVote);
+router.patch('/:postId', auth, updatePost);
+router.patch('/:postId/postUpVote', auth, postUpVote);
+router.patch('/:postId/postDownVote', auth, postDownVote);
 
-router.delete('/:id', auth, deletePost);
+router.delete('/:postId', auth, deletePost);
 
 export default router;
