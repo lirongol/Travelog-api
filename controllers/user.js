@@ -13,7 +13,10 @@ export const login = async (req, res) => {
       const isCorrectPassword = await bcrypt.compare(password, existingUser.password);
       if (!isCorrectPassword) return res.status(400).json({ message: 'Incorrect Email or Password.' });
       const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET);
-      res.status(200).json({ existingUser , token });
+      existingUser.email = null;
+      existingUser.password = null;
+      existingUser.phoneNumber = null;
+      res.status(200).json({ existingUser, token });
    } catch (error) {
       res.status(500).json({ message: 'Something went wrong.' });
    }
@@ -38,6 +41,9 @@ export const register = async (req, res) => {
          profileImg: { url: 'https://res.cloudinary.com/travelog/image/upload/v1626965253/profile_img/profile_wnyc41.jpg' },
       });
       const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET);
+      existingUser.email = null;
+      existingUser.password = null;
+      existingUser.phoneNumber = null;
       res.status(200).json({ existingUser , token });
    } catch (error) {
       res.status(500).json({ message: 'Something went wrong.' });
@@ -49,7 +55,7 @@ export const getProfile = async (req, res) => {
    try {
       const existingUser = await User.findById(req.userId);
       if (!existingUser) return res.status(401).json({ message: 'Unauthorized' });
-      const userInfo = await User.findOne({ username });
+      const userInfo = await User.findOne({ username }).select(['-password', '-email', '-phoneNumber']);
       if (!userInfo) return res.status(404).json({ message: 'User does not exists' });
       res.status(200).json(userInfo);
    } catch (error) {
@@ -74,7 +80,9 @@ export const followUser = async (req, res) => {
          if (folloedUserIndex !== -1) existingUser.following.splice(folloedUserIndex, 1);
       }
       await User.findByIdAndUpdate(existingUser._id, existingUser, { new: true });
-      const updatedFollowedUser = await User.findByIdAndUpdate(followedUser._id, followedUser, { new: true });
+      const updatedFollowedUser = await User.findByIdAndUpdate(
+         followedUser._id, followedUser,
+         { new: true }).select(['-password', '-email', '-phoneNumber']);
       res.status(200).json(updatedFollowedUser);
    } catch (error) {
       res.status(500).json({ message: 'Something went wrong.' });

@@ -12,7 +12,9 @@ const postSchema = mongoose.Schema({
    media: [{ url: String, filename: String }],
    video: [{ url: String, filename: String }],
    upVotes: { type: [String], default: [] },
-   downVotes: { type: [String], default: [] }
+   downVotes: { type: [String], default: [] },
+   isEdited: { type: Boolean, default: false },
+   score: Number
 }, {timestamps: true})
 
 const Post = mongoose.model('Post', postSchema);

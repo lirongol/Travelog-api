@@ -3,16 +3,22 @@ import auth from '../middleware/auth.js';
 
 import {
    getFeedPosts,
+   refreshFeedPosts,
    createPost,
    updatePost,
    deletePost,
    postUpVote,
-   postDownVote
+   postDownVote,
+   getProfilePosts,
+   refreshProfilePosts
 } from '../controllers/post.js';
 
 const router = express.Router();
 
 router.get('/feedposts', auth, getFeedPosts);
+router.get('/refreshfeed', auth, refreshFeedPosts);
+router.get('/profileposts/:userId', auth, getProfilePosts);
+router.get('/refreshprofileposts/:userId', auth, refreshProfilePosts)
 
 router.post('/', auth, createPost);
 

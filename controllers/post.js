@@ -23,8 +23,69 @@ export const getFeedPosts = async (req, res) => {
       };
 
       res.status(200).json({ posts, info });
-   } catch (error) {
-      res.status(404).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(404).json({ message: err.message });
+   }
+}
+
+export const refreshFeedPosts = async (req, res) => {
+   const limit = parseInt(req.query.limit);
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+      const posts = await Post.find({
+         creatorId: { $in: [req.userId, ...user.following] }
+      }).sort({ createdAt: -1 }).limit(limit);
+      
+      res.status(200).json({ posts });
+   } catch (err) {
+      console.log(err);
+      res.status(404).json({ message: err.message });
+   }
+}
+
+export const getProfilePosts = async (req, res) => {
+   const { userId } = req.params;
+   const page = parseInt(req.query.page);
+   const limit = parseInt(req.query.limit);
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+      const posts = await Post.find({
+         creatorId: { $in: userId }
+      }).sort({ createdAt: -1 }).skip(page * limit).limit(limit);
+
+      const info = {
+         prePage: page,
+         nextPage: page + 1,
+         noMorePosts: posts.length < limit
+      };
+
+      res.status(200).json({ posts, info });
+   } catch (err) {
+      console.log(err);
+      res.status(404).json({ message: err.message });
+   }
+}
+
+export const refreshProfilePosts = async (req, res) => {
+   const { userId } = req.params;
+   const limit = parseInt(req.query.limit);
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+      const posts = await Post.find({
+         creatorId: { $in: userId }
+      }).sort({ createdAt: -1 }).limit(limit);
+      
+      res.status(200).json({ posts });
+   } catch (err) {
+      console.log(err);
+      res.status(404).json({ message: err.message });
    }
 }
 
@@ -54,9 +115,9 @@ export const createPost = async (req, res) => {
       }
       await newPost.save();
       res.status(201).json(newPost);
-   } catch (error) {
-      console.log(error)
-      res.status(409).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(409).json({ message: err.message });
    }
 }
 
@@ -69,7 +130,10 @@ export const updatePost = async (req, res) => {
       const user = await User.findById(req.userId);
       if (!user || req.userId !== post.creatorId) return res.status(401).json({ message: 'Unauthorized' });
       if (!post.selectedFiles && !post.selectedVideo) {
-         const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
+         const updatedPost = await Post.findByIdAndUpdate(
+            postId,
+            { ...post, isEdited: true },
+            { new: true });
          res.status(200).json(updatedPost);
       } else {
          if (post.selectedFiles.length !== 0 && post.selectedVideo.length !== 0 ||
@@ -85,12 +149,15 @@ export const updatePost = async (req, res) => {
             post.video = [await uploadPostVideo(post.selectedVideo)];
             post.selectedVideo = '';
          }
-         const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
+         const updatedPost = await Post.findByIdAndUpdate(
+            postId,
+            { ...post, isEdited: true },
+            { new: true });
          res.status(200).json(updatedPost);
       }
-   } catch (error) {
-      console.log(error);
-      res.status(409).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(409).json({ message: err.message });
    }
 }
 
@@ -112,8 +179,9 @@ export const postUpVote = async (req, res) => {
       }
       const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
       res.status(200).json(updatedPost);
-   } catch (error) {
-      res.status(409).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(409).json({ message: err.message });
    }
 }
 
@@ -135,8 +203,9 @@ export const postDownVote = async (req, res) => {
       }
       const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
       res.status(200).json(updatedPost);
-   } catch (error) {
-      res.status(409).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(409).json({ message: err.message });
    }
 }
 
@@ -150,7 +219,8 @@ export const deletePost = async (req, res) => {
       if (!user || req.userId !== post.creatorId) return res.status(401).json({ message: 'Unauthorized' });
       await Post.findByIdAndDelete(postId);
       res.status(202).json({ message: 'Post deleted successfully' });
-   } catch (error) {
-      res.status(409).json({ message: error.message });
+   } catch (err) {
+      console.log(err);
+      res.status(409).json({ message: err.message });
    }
 }
