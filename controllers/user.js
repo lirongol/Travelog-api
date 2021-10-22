@@ -4,37 +4,45 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import User from '../models/user.js';
+import * as error from '../helpers/errorMsg.js';
+import { parseName, parseUsername, checkSpacialChar, checkPhoneNumber } from '../helpers/index.js';
+
 
 export const login = async (req, res) => {
    const { email, password } = req.body;
    try {
-      const existingUser = await User.findOne({ email });
-      if (!existingUser) return res.status(404).json({ message: 'Incorrect Email or Password.' });
-      const isCorrectPassword = await bcrypt.compare(password, existingUser.password);
-      if (!isCorrectPassword) return res.status(400).json({ message: 'Incorrect Email or Password.' });
+      const existingUser = await User.findOne({ email: String(email) });
+      if (!existingUser) return res.status(404).json({ msg: error.incorrect });
+      const isCorrectPassword = await bcrypt.compare(String(password), existingUser.password);
+      if (!isCorrectPassword) return res.status(400).json({ msg: error.incorrect });
       const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.JWT_SECRET);
       existingUser.email = null;
       existingUser.password = null;
       existingUser.phoneNumber = null;
       res.status(200).json({ existingUser, token });
-   } catch (error) {
-      res.status(500).json({ message: 'Something went wrong.' });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
    }
 }
 
 export const register = async (req, res) => {
    const { firstName, lastName, username, email, phoneNumber, password, passwordVerification } = req.body;
    try {
+      if (firstName.length > 20 || lastName.length > 20) return res.status(400).json({ msg: error.charLength });
+      if (checkSpacialChar(firstName) || checkSpacialChar(lastName)) return res.status(400).json({ msg: error.spacialCharName });
+      if (username.length > 20) return res.status(400).json({ msg: error.usernameLength });
+      if (checkSpacialChar(username)) return res.status(400).json({ msg: error.spacialCharusername });
+      if (checkPhoneNumber(phoneNumber) || phoneNumber.length > 20) return res.status(400).json({ msg: error.phoneNumber });
+      if (password !== passwordVerification) return res.status(400).json({ msg: error.passwordVerify });
       const existingUserByEmail = await User.findOne({ email });
-      if (existingUserByEmail) return res.status(400).json({ message: 'Email already exists!' });
+      if (existingUserByEmail) return res.status(400).json({ msg: error.emailExists });
       const existingUserByUsername = await User.findOne({ username });
-      if (existingUserByUsername) return res.status(400).json({ message: 'Username is taken!' });
-      if (password !== passwordVerification) return res.status(400).json({ message: 'Passwords don\'t match!' });
+      if (existingUserByUsername) return res.status(400).json({ msg: error.usernameExsits });
       const hashedPassword = await bcrypt.hash(password, 12);
       const existingUser = await User.create({
-         firstName: firstName.trim().toLowerCase(),
-         lastName: lastName.trim().toLowerCase(),
-         username: username.trim().toLowerCase(),
+         firstName: parseName(firstName),
+         lastName: parseName(lastName),
+         username: parseUsername(username),
          email,
          phoneNumber,
          password: hashedPassword,
@@ -45,8 +53,8 @@ export const register = async (req, res) => {
       existingUser.password = null;
       existingUser.phoneNumber = null;
       res.status(200).json({ existingUser , token });
-   } catch (error) {
-      res.status(500).json({ message: 'Something went wrong.' });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
    }
 }
 
@@ -54,22 +62,23 @@ export const getProfile = async (req, res) => {
    const { username } = req.params;
    try {
       const existingUser = await User.findById(req.userId);
-      if (!existingUser) return res.status(401).json({ message: 'Unauthorized' });
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
       const userInfo = await User.findOne({ username }).select(['-password', '-email', '-phoneNumber']);
-      if (!userInfo) return res.status(404).json({ message: 'User does not exists' });
+      if (!userInfo) return res.status(404).json({ msg: error.userNotFound });
       res.status(200).json(userInfo);
-   } catch (error) {
-      res.status(500).json({ message: 'Something went wrong.' });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
    }
 }
 
-export const followUser = async (req, res) => {
+export const followProfile = async (req, res) => {
    const { username } = req.params;
    try {
       const existingUser = await User.findById(req.userId);
-      if (!existingUser) return res.status(401).json({ message: 'Unauthorized' });
-      const followedUser = await User.findOne({ username });
-      if (!followedUser) return res.status(404).json({ message: 'User does not exists' });
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      if (existingUser.username === username) return res.status(401).json({ msg: error.unauthorized });
+      const followedUser = await User.findOne({ username: String(username) });
+      if (!followedUser) return res.status(404).json({ msg: 'User does not exists' });
       const loggedInUserIndex = followedUser.followers.indexOf(existingUser._id);
       const folloedUserIndex = existingUser.following.indexOf(followedUser._id);
       if (loggedInUserIndex === -1 || folloedUserIndex === -1) {
@@ -84,7 +93,20 @@ export const followUser = async (req, res) => {
          followedUser._id, followedUser,
          { new: true }).select(['-password', '-email', '-phoneNumber']);
       res.status(200).json(updatedFollowedUser);
-   } catch (error) {
-      res.status(500).json({ message: 'Something went wrong.' });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const updateBio = async (req, res) => {
+   const { bio } = req.body;
+   try {
+      const existingUser = await User.findById(req.userId);
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      existingUser.bio = bio;
+      const updatedUser = await User.findByIdAndUpdate(req.userId, existingUser, { new: true });
+      res.status(200).json(updatedUser);
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
    }
 }

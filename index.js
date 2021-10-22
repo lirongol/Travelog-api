@@ -16,7 +16,7 @@ app.use(express.urlencoded({ limit: '30mb', extended: true }));
 app.use('/user', userRoutes);
 app.use('/post', postRoutes);
 
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
    res.send('Travelog API')
 })
 

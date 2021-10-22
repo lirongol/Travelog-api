@@ -14,7 +14,7 @@ const postSchema = mongoose.Schema({
    upVotes: { type: [String], default: [] },
    downVotes: { type: [String], default: [] },
    isEdited: { type: Boolean, default: false },
-   score: Number
+   score: { type: Number, default: 0 }
 }, {timestamps: true})
 
 const Post = mongoose.model('Post', postSchema);
