@@ -1,7 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 
-import { login, register, getProfile, followProfile, updateBio } from '../controllers/user.js';
+import { login, register, getProfile, followProfile, updateBio, updateProfileImg } from '../controllers/user.js';
 
 const router = express.Router();
 
@@ -12,5 +12,6 @@ router.post('/register', register);
 
 router.patch('/followprofile/:username', auth, followProfile);
 router.patch('/updatebio', auth, updateBio);
+router.patch('/updateprofileimg', auth, updateProfileImg);
 
 export default router;

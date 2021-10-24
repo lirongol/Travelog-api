@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import User from '../models/user.js';
+import Post from '../models/post.js';
 import * as error from '../helpers/errorMsg.js';
+import { uploadProfileImg } from '../cloudinary/cloudinary.js';
 import { parseName, parseUsername, checkSpacialChar, checkPhoneNumber } from '../helpers/index.js';
 
 
@@ -63,9 +65,9 @@ export const getProfile = async (req, res) => {
    try {
       const existingUser = await User.findById(req.userId);
       if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
-      const userInfo = await User.findOne({ username }).select(['-password', '-email', '-phoneNumber']);
-      if (!userInfo) return res.status(404).json({ msg: error.userNotFound });
-      res.status(200).json(userInfo);
+      const userProfile = await User.findOne({ username }).select(['-password', '-email', '-phoneNumber']);
+      if (!userProfile) return res.status(404).json({ msg: error.userNotFound });
+      res.status(200).json(userProfile);
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }
@@ -104,8 +106,30 @@ export const updateBio = async (req, res) => {
       const existingUser = await User.findById(req.userId);
       if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
       existingUser.bio = bio;
-      const updatedUser = await User.findByIdAndUpdate(req.userId, existingUser, { new: true });
-      res.status(200).json(updatedUser);
+      const updatedProfile = await User.findByIdAndUpdate(
+         req.userId, existingUser,
+         { new: true }).select(['-password', '-email', '-phoneNumber']);
+      res.status(200).json(updatedProfile);
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const updateProfileImg = async (req, res) => {
+   const { img } = req.body;
+   try {
+      const existingUser = await User.findById(req.userId);
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      const profileImg = await uploadProfileImg(img);
+      if (profileImg.err) {
+         return res.status(profileImg.err.http_code).json({ msg: profileImg.err.message });
+      }
+      existingUser.profileImg = profileImg;
+      const updatedProfile = await User.findByIdAndUpdate(
+         req.userId, existingUser,
+         { new: true }).select(['-password', '-email', '-phoneNumber']);
+      res.status(200).json(updatedProfile);
+      await Post.updateMany({ creatorId: req.userId }, { $set: { creatorProfileImg: profileImg.url } });
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }

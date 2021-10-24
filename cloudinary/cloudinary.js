@@ -35,3 +35,15 @@ export const uploadPostVideo = async (base64Video) => {
       return { err };
    }
 }
+
+export const uploadProfileImg = async (base64Img) => {
+   try {
+      const uploadRes = await cloudinary.uploader.upload(
+         base64Img,
+         { resource_type: 'image', upload_preset: 'profile_img' }
+      );
+      return { url: uploadRes.url, filename: uploadRes.public_id };
+   } catch (err) {
+      return { err };
+   }
+}
