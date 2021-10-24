@@ -2,6 +2,7 @@ import Post from '../models/post.js';
 import User from '../models/user.js';
 import { uploadPostMedia, uploadPostVideo } from '../cloudinary/cloudinary.js';
 import * as error from '../helpers/errorMsg.js';
+import { getHashtags } from '../helpers/index.js';
 
 
 // get requests
@@ -103,6 +104,7 @@ export const createPost = async (req, res) => {
       newPost.creator = user.username;
       newPost.creatorId = user._id;
       newPost.creatorProfileImg = user.profileImg.url;
+      newPost.tags = getHashtags(post.postText);
       if (post.selectedFiles) {
          const uploadedMedia = await uploadPostMedia(post.selectedFiles);
          if (uploadedMedia.err) {
@@ -137,7 +139,11 @@ export const updatePost = async (req, res) => {
       if (!post.selectedFiles && !post.selectedVideo) {
          const updatedPost = await Post.findByIdAndUpdate(
             postId,
-            { ...post, isEdited: true },
+            {
+               ...post,
+               tags: getHashtags(post.postText),
+               isEdited: true
+            },
             { new: true });
          res.status(200).json(updatedPost);
       } else {
