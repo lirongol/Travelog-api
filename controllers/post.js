@@ -2,7 +2,7 @@ import Post from '../models/post.js';
 import User from '../models/user.js';
 import { uploadPostMedia, uploadPostVideo } from '../cloudinary/cloudinary.js';
 import * as error from '../helpers/errorMsg.js';
-import { getHashtags } from '../helpers/index.js';
+import { getHashtags, calcScore } from '../helpers/index.js';
 
 
 // get requests
@@ -82,6 +82,30 @@ export const refreshProfilePosts = async (req, res) => {
       }).sort({ createdAt: -1 }).limit(limit);
       
       res.status(200).json({ posts });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const getExplorePosts = async (req, res) => {
+   const page = parseInt(req.query.page);
+   const limit = parseInt(req.query.limit);
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ msg: error.unauthorized });
+
+      const posts = await Post.find({ creatorId: {$ne: req.userId}})
+         .sort({ score: -1 })
+         .skip(page * limit)
+         .limit(limit);
+
+      const info = {
+         prePage: page,
+         nextPage: page + 1,
+         noMorePosts: posts.length < limit
+      };
+
+      res.status(200).json({ posts, info });
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }
@@ -195,6 +219,7 @@ export const postUpVote = async (req, res) => {
       } else {
          post.upVotes.splice(index, 1);
       }
+      post.score = calcScore(post.upVotes.length, post.downVotes.length, post.createdAt);
       const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
       res.status(200).json(updatedPost);
    } catch (err) {
@@ -218,6 +243,7 @@ export const postDownVote = async (req, res) => {
       } else {
          post.downVotes.splice(index, 1);
       }
+      post.score = calcScore(post.upVotes.length, post.downVotes.length, post.createdAt);
       const updatedPost = await Post.findByIdAndUpdate(postId, post, { new: true });
       res.status(200).json(updatedPost);
    } catch (err) {

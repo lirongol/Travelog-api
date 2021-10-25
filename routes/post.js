@@ -10,7 +10,8 @@ import {
    postUpVote,
    postDownVote,
    getProfilePosts,
-   refreshProfilePosts
+   refreshProfilePosts,
+   getExplorePosts
 } from '../controllers/post.js';
 
 const router = express.Router();
@@ -18,7 +19,8 @@ const router = express.Router();
 router.get('/feedposts', auth, getFeedPosts);
 router.get('/refreshfeed', auth, refreshFeedPosts);
 router.get('/profileposts/:userId', auth, getProfilePosts);
-router.get('/refreshprofileposts/:userId', auth, refreshProfilePosts)
+router.get('/refreshprofileposts/:userId', auth, refreshProfilePosts);
+router.get('/exploreposts', auth, getExplorePosts);
 
 router.post('/', auth, createPost);
 
