@@ -134,3 +134,31 @@ export const updateProfileImg = async (req, res) => {
       res.status(500).json({ msg: error.server });
    }
 }
+
+export const getProfileFollowers = async (req, res) => {
+   const { username } = req.params;
+   try {
+      const existingUser = await User.findById(req.userId);
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      const profile = await User.findOne({ username });
+      const followers = await User.find({ _id: { $in: profile.followers } })
+         .select(['profileImg', 'username', '-_id']);
+      res.status(200).json(followers);
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const getProfileFollowing = async (req, res) => {
+   const { username } = req.params;
+   try {
+      const existingUser = await User.findById(req.userId);
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      const profile = await User.findOne({ username });
+      const following = await User.find({ _id: { $in: profile.following } })
+         .select(['profileImg', 'username', '-_id']);
+      res.status(200).json(following);
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
