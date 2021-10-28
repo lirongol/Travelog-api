@@ -186,3 +186,25 @@ export const getProfileImages = async (req, res) => {
       res.status(500).json({ msg: error.server });
    }
 }
+
+export const getProfileVideos = async (req, res) => {
+   const { username } = req.params;
+   try {
+      const existingUser = await User.findById(req.userId);
+      if (!existingUser) return res.status(401).json({ msg: error.unauthorized });
+      const profile = await User.findOne({ username });
+      if (!profile) return res.status(404).json({ msg: error.userNotFound });
+      const postVideos = await Post.find({ creatorId: profile._id })
+         .sort({ createdAt: -1 })
+         .select(['-_id', 'video']);
+      const videos = [];
+      for (let i of postVideos) {
+         if (i.video[0]) {
+            videos.push(i.video[0]);
+         }
+      }
+      res.status(200).json(videos);
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
