@@ -9,7 +9,8 @@ import {
    updateBio,
    updateProfileImg,
    getProfileFollowers,
-   getProfileFollowing
+   getProfileFollowing,
+   getProfileImages
 } from '../controllers/user.js';
 
 const router = express.Router();
@@ -17,6 +18,7 @@ const router = express.Router();
 router.get('/:username', auth, getProfile);
 router.get('/:username/followers', auth, getProfileFollowers);
 router.get('/:username/following', auth, getProfileFollowing);
+router.get('/:username/images', auth, getProfileImages)
 
 router.post('/login', login);
 router.post('/register', register);
