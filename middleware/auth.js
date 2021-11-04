@@ -10,11 +10,11 @@ const auth = async (req, res, next) => {
          req.userId = decodedData?.id;
          next();
       } else {
-         res.status(401).json({ message: 'Unauthorized' });
+         res.status(401).json({ msg: 'Unauthorized' });
       }
    } catch (err) {
       console.log('JWT - token not valid')
-      res.status(401).json({ message: 'Unauthorized' });
+      res.status(401).json({ msg: 'Unauthorized' });
    }
 }
 

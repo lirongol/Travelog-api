@@ -25,7 +25,7 @@ export const getHashtags = text => {
       .map(s => s.trim())
       .filter(s => s[0] === '#')
       .map(tag => tag.slice(1, tag.length).toLowerCase().trim())
-      .filter(tag => !checkSpacialChar(tag) && tag.length < 20);
+      .filter(tag => !checkSpacialChar(tag) && tag.length < 20 && tag);
    return [ ...new Set(tags)];
 }
 

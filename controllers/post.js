@@ -1,5 +1,6 @@
 import Post from '../models/post.js';
 import User from '../models/user.js';
+import App from '../models/app.js';
 import { uploadPostMedia, uploadPostVideo } from '../cloudinary/cloudinary.js';
 import * as error from '../helpers/errorMsg.js';
 import { getHashtags, calcScore } from '../helpers/index.js';
@@ -111,6 +112,33 @@ export const getExplorePosts = async (req, res) => {
    }
 }
 
+export const getTagPosts = async (req, res) => {
+   const page = parseInt(req.query.page);
+   const limit = parseInt(req.query.limit);
+   const { tag } = req.params;
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ msg: error.unauthorized });
+
+      const { tags } = await App.findOne().select(['tags', '-_id']);
+
+      const posts = await Post.find({ _id: { $in: tags[tag] } })
+         .sort({ score: -1 })
+         .skip(page * limit)
+         .limit(limit);
+
+      const info = {
+         prePage: page,
+         nextPage: page + 1,
+         noMorePosts: posts.length < limit
+      };
+
+      res.status(200).json({ posts, info });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
 // post requests
 
 export const createPost = async (req, res) => {
@@ -147,6 +175,16 @@ export const createPost = async (req, res) => {
       }
       await newPost.save();
       res.status(201).json(newPost);
+
+      const app = await App.findOne();
+      for (let tag of newPost.tags) {
+         if (app.tags[tag] === undefined) {
+            app.tags[tag] = [newPost._id.toString()];
+         } else {
+            app.tags[tag].push(newPost._id.toString());
+         }
+      }
+      await App.findOneAndUpdate({}, app);
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }
@@ -159,6 +197,7 @@ export const updatePost = async (req, res) => {
    const post = req.body;
    try {
       const user = await User.findById(req.userId);
+      const oldPost = await Post.findById(postId).select('tags');
       if (!user || req.userId !== post.creatorId) return res.status(401).json({ msg: error.unauthorized });
       if (!post.selectedFiles && !post.selectedVideo) {
          const updatedPost = await Post.findByIdAndUpdate(
@@ -170,6 +209,23 @@ export const updatePost = async (req, res) => {
             },
             { new: true });
          res.status(200).json(updatedPost);
+
+         const app = await App.findOne();
+         for (let tag of oldPost.tags) {
+            const index = app.tags[tag].indexOf(oldPost._id.toString());
+            if (index >= 0) {
+               app.tags[tag].splice(index, 1);
+            }
+         }
+         for (let tag of updatedPost.tags) {
+            if (app.tags[tag] === undefined) {
+               app.tags[tag] = [updatedPost._id.toString()];
+            } else {
+               app.tags[tag].push(updatedPost._id.toString());
+            }
+         }
+         await App.findOneAndUpdate({}, app);
+         
       } else {
          if (post.selectedFiles.length !== 0 && post.selectedVideo.length !== 0 ||
             post.selectedFiles.length !== 0 && (post?.video ? post.video.length !== 0 : false) ||
@@ -194,11 +250,33 @@ export const updatePost = async (req, res) => {
          }
          const updatedPost = await Post.findByIdAndUpdate(
             postId,
-            { ...post, isEdited: true },
+            {
+               ...post,
+               isEdited: true,
+               tags: getHashtags(post.postText)
+            },
             { new: true });
          res.status(200).json(updatedPost);
+
+         const app = await App.findOne();
+         for (let tag of oldPost.tags) {
+            const index = app.tags[tag].indexOf(oldPost._id.toString());
+            if (index >= 0) {
+               app.tags[tag].splice(index, 1);
+            }
+         }
+         for (let tag of updatedPost.tags) {
+            if (app.tags[tag] === undefined) {
+               app.tags[tag] = [updatedPost._id.toString()];
+            } else {
+               app.tags[tag].push(updatedPost._id.toString());
+            }
+         }
+         await App.findOneAndUpdate({}, app);
       }
+
    } catch (err) {
+      console.log(err);
       res.status(500).json({ msg: error.server });
    }
 }
@@ -261,6 +339,16 @@ export const deletePost = async (req, res) => {
       if (!user || req.userId !== post.creatorId) return res.status(401).json({ msg: error.unauthorized });
       await Post.findByIdAndDelete(postId);
       res.status(202).json({ msg: 'Post deleted successfully' });
+
+      const app = await App.findOne();
+      for (let tag of post.tags) {
+         const index = app.tags[tag].indexOf(post._id.toString());
+         if (index >= 0) {
+            app.tags[tag].splice(index, 1);
+         }
+      }
+      await App.findOneAndUpdate({}, app);
+      
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import userRoutes from './routes/user.js';
 import postRoutes from './routes/post.js';
+import appRoutes from './routes/app.js';
 
 const app = express();
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ limit: '30mb', extended: true }));
 
 app.use('/user', userRoutes);
 app.use('/post', postRoutes);
+app.use('/app', appRoutes);
 
 app.get('*', (req, res) => {
    res.send('Travelog API')

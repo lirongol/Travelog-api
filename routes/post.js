@@ -11,7 +11,8 @@ import {
    postDownVote,
    getProfilePosts,
    refreshProfilePosts,
-   getExplorePosts
+   getExplorePosts,
+   getTagPosts
 } from '../controllers/post.js';
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.get('/refreshfeed', auth, refreshFeedPosts);
 router.get('/profileposts/:userId', auth, getProfilePosts);
 router.get('/refreshprofileposts/:userId', auth, refreshProfilePosts);
 router.get('/exploreposts', auth, getExplorePosts);
+router.get('/tagposts/:tag', auth, getTagPosts);
 
 router.post('/', auth, createPost);
 
