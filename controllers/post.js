@@ -96,7 +96,7 @@ export const getExplorePosts = async (req, res) => {
       if (!user) return res.status(401).json({ msg: error.unauthorized });
 
       const posts = await Post.find({ creatorId: {$ne: req.userId}})
-         .sort({ score: -1 })
+         .sort({ score: -1, createdAt: -1 })
          .skip(page * limit)
          .limit(limit);
 
@@ -123,7 +123,7 @@ export const getTagPosts = async (req, res) => {
       const { tags } = await App.findOne().select(['tags', '-_id']);
 
       const posts = await Post.find({ _id: { $in: tags[tag] } })
-         .sort({ score: -1 })
+         .sort({ score: -1, createdAt: -1 })
          .skip(page * limit)
          .limit(limit);
 
