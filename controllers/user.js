@@ -177,10 +177,9 @@ export const getProfileImages = async (req, res) => {
          .select(['media', '-_id']);
       const images = [];
       for (let i of media) {
-         for (let img of i.media) {
-            images.push(img);
-         }
+         images.push(...i.media);
       }
+      if (images.length === 0) return res.status(200).json({ msg: 'no images' });
       res.status(200).json(images);
    } catch (err) {
       res.status(500).json({ msg: error.server });
@@ -203,6 +202,7 @@ export const getProfileVideos = async (req, res) => {
             videos.push(i.video[0]);
          }
       }
+      if (videos.length === 0) return res.status(200).json({ msg: 'no videos' });
       res.status(200).json(videos);
    } catch (err) {
       res.status(500).json({ msg: error.server });
