@@ -95,7 +95,7 @@ export const getExplorePosts = async (req, res) => {
       const user = await User.findById(req.userId);
       if (!user) return res.status(401).json({ msg: error.unauthorized });
 
-      const posts = await Post.find({ creatorId: {$ne: req.userId}})
+      const posts = await Post.find({ creatorId: { $ne: req.userId } })
          .sort({ score: -1, createdAt: -1 })
          .skip(page * limit)
          .limit(limit);
@@ -123,6 +123,30 @@ export const getTagPosts = async (req, res) => {
       const { tags } = await App.findOne().select(['tags', '-_id']);
 
       const posts = await Post.find({ _id: { $in: tags[tag] } })
+         .sort({ score: -1, createdAt: -1 })
+         .skip(page * limit)
+         .limit(limit);
+
+      const info = {
+         prePage: page,
+         nextPage: page + 1,
+         noMorePosts: posts.length < limit
+      };
+
+      res.status(200).json({ posts, info });
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const getVideoPosts = async (req, res) => {
+   const page = parseInt(req.query.page);
+   const limit = parseInt(req.query.limit);
+   try {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ msg: error.unauthorized });
+
+      const posts = await Post.find({ creatorId: { $ne: req.userId }, video: { $size: 1 } })
          .sort({ score: -1, createdAt: -1 })
          .skip(page * limit)
          .limit(limit);

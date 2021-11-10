@@ -12,7 +12,8 @@ import {
    getProfilePosts,
    refreshProfilePosts,
    getExplorePosts,
-   getTagPosts
+   getTagPosts,
+   getVideoPosts
 } from '../controllers/post.js';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get('/profileposts/:userId', auth, getProfilePosts);
 router.get('/refreshprofileposts/:userId', auth, refreshProfilePosts);
 router.get('/exploreposts', auth, getExplorePosts);
 router.get('/tagposts/:tag', auth, getTagPosts);
+router.get('/videoposts', auth, getVideoPosts);
 
 router.post('/', auth, createPost);
 
