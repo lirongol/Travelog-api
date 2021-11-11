@@ -44,6 +44,7 @@ export const register = async (req, res) => {
       const existingUser = await User.create({
          firstName: parseName(firstName),
          lastName: parseName(lastName),
+         fullName: `${parseName(firstName)} ${parseName(lastName)}`,
          username: parseUsername(username),
          email,
          phoneNumber,
@@ -208,3 +209,17 @@ export const getProfileVideos = async (req, res) => {
       res.status(500).json({ msg: error.server });
    }
 }
+
+// const a = async (req, res) => {
+//    try {
+//       const users = await User.find();
+//       for (let user of users) {
+//          const u = await User.updateOne({ _id: user._id }, { $set: { fullName: `${user.firstName} ${user.lastName}` } });
+//          console.log('updated');
+//       }
+//    } catch (err) {
+//       console.log(err);
+//    }
+// }
+
+// a();
