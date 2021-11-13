@@ -5,6 +5,11 @@ import App from '../models/app.js';
 export const search = async (req, res) => {
    const limit = 5;
    let { q } = req.query;
+   for (let char of q) {
+      if (/[=+'`~;!@#$%^&*(),.?":{}|<>\\/[\]]/.test(q)) {
+         q = q.replace(/[=+'`~;!@#$%^&*(),.?":{}|<>\\/[\]]/, '');
+      }
+   }
    q = q.trim();
    try {
       const user = await User.findById(req.userId);

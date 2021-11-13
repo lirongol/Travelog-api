@@ -31,7 +31,7 @@ mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnified
       console.log('connected to DB');
    })
    .catch(err => {
-      console.log('DB Connection Error!', err);
+      console.log('DB Connection Error!', err.message);
    })
 
 app.listen(port, () => {
