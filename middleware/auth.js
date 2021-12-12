@@ -13,7 +13,6 @@ const auth = async (req, res, next) => {
          res.status(401).json({ msg: 'Unauthorized' });
       }
    } catch (err) {
-      console.log('JWT - token not valid')
       res.status(401).json({ msg: 'Unauthorized' });
    }
 }

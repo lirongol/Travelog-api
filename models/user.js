@@ -12,6 +12,7 @@ const userSchema = mongoose.Schema({
    bio: { type: String, default: '' },
    following: [String],
    followers: [String],
+   status: Boolean,
 }, {timestamps: true})
 
 const User = mongoose.model('User', userSchema);

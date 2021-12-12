@@ -214,7 +214,7 @@ export const getProfileVideos = async (req, res) => {
 //    try {
 //       const users = await User.find();
 //       for (let user of users) {
-//          const u = await User.updateOne({ _id: user._id }, { $set: { fullName: `${user.firstName} ${user.lastName}` } });
+//          const u = await User.updateOne({ _id: user._id }, { $set: { status: false } });
 //          console.log('updated');
 //       }
 //    } catch (err) {
