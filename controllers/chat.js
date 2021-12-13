@@ -33,48 +33,49 @@ export const sendMessage = async (req, res) => {
          ]
       });
 
-      if (existingChat) {
+      existingChat.messages.push({
+         userId: sender._id,
+         text: message,
+         confirmed: true
+      });
 
-         existingChat.messages.push({
-            userId: sender._id,
-            text: message,
-            confirmed: true
-         });
-
-         const chat = await existingChat.save();
-         res.status(200).json(chat);
-
-      } else {
-
-         const newChat = new Chat({
-            users: [
-               {
-                  id: sender._id,
-                  profileImg: sender.profileImg,
-                  fullName: sender.fullName,
-                  username: sender.username
-               },
-               {
-                  id: receiver._id,
-                  profileImg: receiver.profileImg,
-                  fullName: receiver.fullName,
-                  username: receiver.username
-               }
-            ],
-            messages: []
-         });
-
-         newChat.messages.push({
-            userId: sender._id,
-            text: message,
-            confirmed: true
-         })
-
-         const chat = await newChat.save();
-         res.status(200).json(chat);
-
-      }
+      await existingChat.save();
+      const newMessage = existingChat.messages.at(-1);
+      res.status(200).json({ newMessage, chatId: existingChat._id });
       
+   } catch (err) {
+      res.status(500).json({ msg: error.server });
+   }
+}
+
+export const newChat = async (req, res) => {
+   const receiverId = req.params.userId;
+   try {
+      const sender = await User.findById(req.userId);
+      if (!sender) return res.status(401).json({ msg: error.unauthorized });
+      const receiver = await User.findById(receiverId);
+      if (!receiver) return res.status(404).json({ msg: 'user not found' });
+
+      const newChat = new Chat({
+         users: [
+            {
+               id: sender._id,
+               profileImg: sender.profileImg,
+               fullName: sender.fullName,
+               username: sender.username
+            },
+            {
+               id: receiver._id,
+               profileImg: receiver.profileImg,
+               fullName: receiver.fullName,
+               username: receiver.username
+            }
+         ]
+      });
+
+      const chat = await newChat.save();
+      res.status(200).json(chat);
+
    } catch (err) {
       res.status(500).json({ msg: error.server });
    }

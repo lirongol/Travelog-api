@@ -12,10 +12,10 @@ const socketIO = io => {
          }
       })
 
-      socket.on('send-message', (receiverId, senderId, message) => {
+      socket.on('send-message', (receiverId, senderId, message, chatId) => {
          const user = users.find(user => user.userId == receiverId);
          if (user) {
-            socket.to(user.socketId).emit('receive-message', message, senderId);
+            socket.to(user.socketId).emit('receive-message', message, senderId, chatId);
          }
       })
    
