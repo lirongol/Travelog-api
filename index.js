@@ -16,7 +16,7 @@ import chatRoutes from './routes/chat.js';
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-   cors: { origin: ['http://localhost:3000', 'http://192.168.1.200:3000'] }
+   cors: { origin: 'https://travelogapp.netlify.app' }
 });
 socketIO(io);
 
