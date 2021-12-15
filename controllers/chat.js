@@ -56,25 +56,34 @@ export const newChat = async (req, res) => {
       const receiver = await User.findById(receiverId);
       if (!receiver) return res.status(404).json({ msg: 'user not found' });
 
-      const newChat = new Chat({
-         users: [
-            {
-               id: sender._id,
-               profileImg: sender.profileImg,
-               fullName: sender.fullName,
-               username: sender.username
-            },
-            {
-               id: receiver._id,
-               profileImg: receiver.profileImg,
-               fullName: receiver.fullName,
-               username: receiver.username
-            }
+      const existingChat = await Chat.findOne({
+         $and: [
+            { 'users.id': sender._id },
+            { 'users.id': receiver._id }
          ]
       });
 
-      const chat = await newChat.save();
-      res.status(200).json(chat);
+      if (!existingChat) {
+         const newChat = new Chat({
+            users: [
+               {
+                  id: sender._id,
+                  profileImg: sender.profileImg,
+                  fullName: sender.fullName,
+                  username: sender.username
+               },
+               {
+                  id: receiver._id,
+                  profileImg: receiver.profileImg,
+                  fullName: receiver.fullName,
+                  username: receiver.username
+               }
+            ]
+         });
+   
+         const chat = await newChat.save();
+         res.status(200).json(chat);
+      }
 
    } catch (err) {
       res.status(500).json({ msg: error.server });
