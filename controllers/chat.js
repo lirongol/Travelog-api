@@ -33,6 +33,8 @@ export const sendMessage = async (req, res) => {
          ]
       });
 
+      console.log(existingChat);
+
       existingChat.messages.push({
          userId: sender._id,
          text: message,
@@ -41,7 +43,6 @@ export const sendMessage = async (req, res) => {
 
       await existingChat.save();
       const newMessage = existingChat.messages.at(-1);
-      console.log(newMessage);
       res.status(200).json({ newMessage, chatId: existingChat._id });
       
    } catch (err) {
