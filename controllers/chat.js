@@ -33,8 +33,6 @@ export const sendMessage = async (req, res) => {
          ]
       });
 
-      console.log(existingChat);
-
       existingChat.messages.push({
          userId: sender._id,
          text: message,
@@ -47,6 +45,7 @@ export const sendMessage = async (req, res) => {
       
    } catch (err) {
       res.status(500).json({ msg: error.server });
+      console.log(err.message);
    }
 }
 
