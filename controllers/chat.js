@@ -40,7 +40,7 @@ export const sendMessage = async (req, res) => {
       });
 
       await existingChat.save();
-      const newMessage = existingChat.messages.at(-1);
+      const newMessage = existingChat.messages[-1];
       res.status(200).json({ newMessage, chatId: existingChat._id });
       
    } catch (err) {
