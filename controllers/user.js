@@ -210,6 +210,14 @@ export const getProfileVideos = async (req, res) => {
    }
 }
 
+export const setStatus = async (userId, status) => {
+   try {
+      await User.updateOne({ _id: userId }, { $set: { status: status } });
+   } catch (err) {
+      console.log(err.message);
+   }
+}
+
 // const a = async (req, res) => {
 //    try {
 //       const users = await User.find();

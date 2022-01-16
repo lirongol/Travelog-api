@@ -1,4 +1,4 @@
-
+import { setStatus } from '../controllers/user.js';
 
 let users = [];
 
@@ -10,6 +10,7 @@ const socketIO = io => {
             users.push({ userId, socketId: socket.id });
             // console.log(users)
          }
+         setStatus(userId, true);
       })
 
       socket.on('send-message', (receiverId, senderId, message, chatId) => {
@@ -20,6 +21,7 @@ const socketIO = io => {
       })
    
       socket.on('disconnect', () => {
+         setStatus(users.find(user => user.socketId === socket.id).userId, false);
          users = users.filter(user => user.socketId !== socket.id);
          // console.log(users)
       });
