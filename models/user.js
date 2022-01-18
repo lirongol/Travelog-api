@@ -13,6 +13,8 @@ const userSchema = mongoose.Schema({
    following: [String],
    followers: [String],
    status: Boolean,
+   notifications: [{ type: String, username: String, date: { type: Date, default: () => Date.now() } }],
+   messages: { type: Number, default: 0 },
 }, {timestamps: true})
 
 const User = mongoose.model('User', userSchema);

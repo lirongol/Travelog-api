@@ -217,17 +217,3 @@ export const setStatus = async (userId, status) => {
       console.log(err.message);
    }
 }
-
-// const a = async (req, res) => {
-//    try {
-//       const users = await User.find();
-//       for (let user of users) {
-//          const u = await User.updateOne({ _id: user._id }, { $set: { status: false } });
-//          console.log('updated');
-//       }
-//    } catch (err) {
-//       console.log(err);
-//    }
-// }
-
-// a();
