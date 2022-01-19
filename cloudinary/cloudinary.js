@@ -17,7 +17,7 @@ export const uploadPostMedia = async (base64Array) => {
             file,
             { resource_type: 'image', upload_preset: 'posts_media' }
          );
-         return { url: uploadRes.url, filename: uploadRes.public_id };
+         return { url: uploadRes.secure_url, filename: uploadRes.public_id };
       }))
    } catch (err) {
       return { err };
@@ -30,7 +30,7 @@ export const uploadPostVideo = async (base64Video) => {
          base64Video,
          { resource_type: 'video', upload_preset: 'posts_video' }
       );
-      return [{ url: uploadRes.url, filename: uploadRes.public_id }];
+      return [{ url: uploadRes.secure_url, filename: uploadRes.public_id }];
    } catch (err) {
       return { err };
    }
@@ -42,7 +42,7 @@ export const uploadProfileImg = async (base64Img) => {
          base64Img,
          { resource_type: 'image', upload_preset: 'profile_img' }
       );
-      return { url: uploadRes.url, filename: uploadRes.public_id };
+      return { url: uploadRes.secure_url, filename: uploadRes.public_id };
    } catch (err) {
       return { err };
    }
