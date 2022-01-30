@@ -8,7 +8,6 @@ const socketIO = io => {
       socket.on('user-online', userId => {
          if (userId && !users.some(user => user.userId === userId)) {
             users.push({ userId, socketId: socket.id });
-            // console.log(users)
          }
          setStatus(userId, true);
       })
@@ -19,11 +18,15 @@ const socketIO = io => {
             socket.to(user.socketId).emit('receive-message', message, senderId, chatId);
          }
       })
-   
-      socket.on('disconnect', () => {
+
+      socket.on('user-offline', () => {
          setStatus(users.find(user => user.socketId === socket.id).userId, false);
          users = users.filter(user => user.socketId !== socket.id);
-         // console.log(users)
+      });
+   
+      socket.on('disconnect', () => {
+         setStatus(users.find(user => user.socketId === socket.id)?.userId, false);
+         users = users.filter(user => user.socketId !== socket.id);
       });
 
    })
